@@ -1,35 +1,33 @@
-;
-(function() {
-    'use strict'
+'use strict'
 
-    let auth = {
-        user: null,
-        login(username, password) {
-            this.user = username;
-        },
-        logout() {
-            this.user = null;
+/* Binded to AuthClosure.identity via Object.defineProperty. */
+let identity = null
+
+function AuthClosure(instance) {
+    this.login = function(username, password) {
+        this.identity = username
+    }
+
+    this.logout = () => {
+        this.identity = null
+    }
+}
+
+Object.defineProperty(AuthClosure.prototype, 'identity', {
+    get() {
+        return identity
+    },
+    set(value) {
+        identity = value
+    }
+})
+
+function install(Vue, options) {
+    Object.defineProperty(Vue.prototype, '$auth', {
+        get() {
+            return new AuthClosure(this)
         }
-    }
+    })
+}
 
-    function install(Vue, options) {
-        Object.defineProperties(Vue.prototype, {
-            $auth: {
-                get() {
-                    auth.$route = this.$route
-                    auth.$router = this.$router
-                    return auth
-                }
-            }
-        })
-    }
-
-    /* istanbul ignore next */
-    if (typeof exports == "object") {
-        module.exports = install
-    } else if (typeof define == "function" && define.amd) {
-        define([], () => install)
-    } else if (window.Vue) {
-        Vue.use(install)
-    }
-})()
+module.exports = install
