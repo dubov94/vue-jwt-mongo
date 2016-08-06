@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - "node"
 install:
+  - npm install
   - npm install -g mocha istanbul codecov
 script:
   - istanbul cover mocha tests.js --report lcovonly -- -R spec
