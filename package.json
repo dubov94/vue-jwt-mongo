@@ -1,0 +1,32 @@
+{
+  "name": "vue-jwt-mongo",
+  "version": "1.0.0",
+  "description": "Simple authentication system for Vue.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dubov94/vue-jwt-mongo.git"
+  },
+  "keywords": [
+    "vue",
+    "vue.js",
+    "jwt",
+    "jsonwebtoken",
+    "mongo",
+    "mongodb",
+    "auth",
+    "authentication"
+  ],
+  "author": "Pavel Dubov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dubov94/vue-jwt-mongo/issues"
+  },
+  "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
+  "devDependencies": {
+    "chai": "^3.5.0"
+  }
+}
