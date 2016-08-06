@@ -5,7 +5,5 @@ install:
   - npm install
   - npm install -g mocha istanbul codecov
 script:
-  - istanbul cover mocha tests.js --report lcovonly -- -R spec
+  - npm run coverage
   - codecov
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

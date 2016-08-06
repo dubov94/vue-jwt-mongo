@@ -4,7 +4,8 @@
   "description": "Simple authentication system for Vue.js",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests.js"
+    "test": "mocha tests.js",
+    "coverage": "istanbul cover mocha --report lcovonly -- -R spec tests.js"
   },
   "repository": {
     "type": "git",
