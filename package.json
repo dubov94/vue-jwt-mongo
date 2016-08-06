@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
   "devDependencies": {
-    "chai": "^3.5.0"
+    "chai": "^3.5.0",
+    "vue": "^1.0.26"
   }
 }
