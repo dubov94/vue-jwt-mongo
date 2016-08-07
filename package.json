@@ -29,7 +29,9 @@
   "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "dom-storage": "^2.0.2",
     "jsdom": "^9.4.1",
+    "sinon": "^1.17.5",
     "vue": "^1.0.26"
   },
   "dependencies": {

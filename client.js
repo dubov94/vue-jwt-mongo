@@ -1,33 +1,65 @@
 'use strict'
 
-/* Binded to AuthClosure.identity via Object.defineProperty. */
-let identity = null
-
-function AuthClosure(instance) {
-    this.login = function(username, password) {
-        this.identity = username
+function CToken(key) {
+    this.get = () => {
+        return localStorage.getItem(key)
     }
 
-    this.logout = () => {
-        this.identity = null
+    this.set = (value) => {
+        localStorage.setItem(key, value)
+    }
+
+    this.remove = () => {
+        localStorage.removeItem(key)
     }
 }
 
-Object.defineProperty(AuthClosure.prototype, 'identity', {
-    get() {
-        return identity
-    },
-    set(value) {
-        identity = value
+function CAuth() {
+    this.token = new CToken('jsonwebtoken')
+
+    this.logIn = (username, password, successCallback, errorCallback) => {
+        Vue.http.post('/auth/login', {
+            username,
+            password
+        }).then((response) => {
+            this.token.set(response.text())
+            successCallback()
+        }, errorCallback)
     }
-})
+
+    this.logOut = () => {
+        this.token.remove()
+    }
+
+    this.isLoggedIn = () => {
+        return this.token.get() !== null
+    }
+}
+
+const Auth = new CAuth()
+
+function Intercept(request, next) {
+    if (request.bearer) {
+        if (!Auth.isLoggedIn()) {
+            next(request.respondWith('', {
+                status: 401,
+                statusText: 'Request demands JWT but user was not logged in'
+            }))
+        } else {
+            request.headers.Authorization = 'Bearer ' + Auth.token.get()
+            next()
+        }
+    } else {
+        next()
+    }
+}
 
 function install(Vue, options) {
     Object.defineProperty(Vue.prototype, '$auth', {
-        get() {
-            return new AuthClosure(this)
-        }
+        value: Auth
     })
+
+    Vue.http.interceptors.push(Intercept)
 }
 
 module.exports = install

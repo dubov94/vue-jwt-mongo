@@ -1,6 +1,6 @@
 'use strict'
 
-const Client = require("./client.js");
+const Client = require("./client");
 
 module.exports = {
     Client
