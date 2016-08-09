@@ -11,8 +11,8 @@ function initialize(options) {
     // Create empty schema that is going to be used
     // by passport-local-mongoose.
     const UserSchema = new mongoose.Schema()
-        // Now a corresponding model will have methods
-        // such as createStrategy() and serializeUser().
+    // Now a corresponding model will have methods
+    // such as createStrategy() and serializeUser().
     UserSchema.plugin(passportLocalMongoose)
     const User = mongoose.model('User', UserSchema)
 
@@ -23,8 +23,8 @@ function initialize(options) {
     passport.deserializeUser(User.deserializeUser())
 
     const jsonParser = bodyParser.json()
-        // Endpoints with this middleware provided check the token for validity
-        // and set request.user dictionary to payload.
+    // Endpoints with this middleware provided check the token for validity
+    // and set request.user dictionary to payload.
     const jwtValidator = expressJwt({
         secret: options.secret
     })
@@ -33,6 +33,7 @@ function initialize(options) {
     mongoose.Promise = global.Promise
     mongoose.connect(options.mongo, (error) => {
         if (error) {
+            /* istanbul ignore next */
             throw error
         }
     })

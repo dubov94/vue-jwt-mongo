@@ -31,7 +31,7 @@ describe('Server', () => {
             secret: jwtSecret
         })
         app = express()
-            // app.use(morgan('combined'))
+        // app.use(morgan('combined'))
         app.use(passport.initialize())
         app.post('/auth/register', vjmServer.registerHandler)
         app.post('/auth/login', vjmServer.loginHandler)
