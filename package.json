@@ -31,6 +31,7 @@
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "dom-storage": "^2.0.2",
+    "express": "^4.14.0",
     "jsdom": "^9.4.1",
     "morgan": "^1.7.0",
     "sinon": "^1.17.5",
