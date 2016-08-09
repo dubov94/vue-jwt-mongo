@@ -2,10 +2,10 @@
   "name": "vue-jwt-mongo",
   "version": "1.0.0",
   "description": "Simple authentication system for Vue.js",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "mocha tests.js",
-    "coverage": "istanbul cover _mocha --report lcovonly -- -R spec tests.js"
+    "test": "mocha",
+    "coverage": "istanbul cover _mocha --report lcovonly -- -R spec"
   },
   "repository": {
     "type": "git",
@@ -29,13 +29,21 @@
   "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
     "dom-storage": "^2.0.2",
     "jsdom": "^9.4.1",
+    "morgan": "^1.7.0",
     "sinon": "^1.17.5",
-    "vue": "^1.0.26"
+    "vue": "^1.0.26",
+    "vue-resource": "^0.9.3"
   },
   "dependencies": {
-    "vue-resource": "^0.9.3",
-    "vue-router": "^0.7.13"
+    "body-parser": "^1.15.2",
+    "express-jwt": "^3.4.0",
+    "jsonwebtoken": "^7.1.7",
+    "mongoose": "^4.5.8",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^4.0.0"
   }
 }

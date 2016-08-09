@@ -1,16 +1,16 @@
 'use strict'
 
-const VueJwtMongo = require('./index')
 const assert = require('chai').assert
+const jsdom = require('jsdom')
+const domStorage = require('dom-storage')
+const Vue = require('vue')
+const VueJwtMongo = require('../src/index')
 
 describe('Client', () => {
-    const Vue = require('vue')
-    const jsdom = require('jsdom')
-    const domStorage = require('dom-storage')
     let vm, sinon
 
     before((done) => {
-        jsdom.env('', (err, window) => {
+        jsdom.env('', (error, window) => {
             global.window = window
             global.document = window.document
             global.location = window.location
@@ -20,15 +20,14 @@ describe('Client', () => {
             })
             global.Vue = Vue
 
-            /* XMLHttpRequest should be defined in globals earlier than
-            sinon requirement happens (see getWorkingXHR() in sinon) */
+            // XMLHttpRequest should be defined in globals earlier than
+            // sinon requirement happens (see getWorkingXHR() in sinon).
             sinon = require('sinon')
 
             Vue.use(require('vue-resource'))
-            Vue.use(require('vue-router'))
             Vue.use(VueJwtMongo.Client)
 
-            done()
+            done(error)
         })
     })
 
@@ -95,7 +94,8 @@ describe('Client', () => {
 
         it('modifies bearer request', (done) => {
             expectXhr((request) => {
-                assert.equal(request.requestHeaders.Authorization, 'Bearer jwt')
+                assert.equal(
+                    request.requestHeaders.Authorization, 'Bearer jwt')
                 done()
             })
             vm.$auth.token.set('jwt')

@@ -38,7 +38,7 @@ function CAuth() {
 
 const Auth = new CAuth()
 
-function Intercept(request, next) {
+function intercept(request, next) {
     if (request.bearer) {
         if (!Auth.isLoggedIn()) {
             next(request.respondWith('', {
@@ -59,7 +59,7 @@ function install(Vue, options) {
         value: Auth
     })
 
-    Vue.http.interceptors.push(Intercept)
+    Vue.http.interceptors.push(intercept)
 }
 
 module.exports = install
