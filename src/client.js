@@ -1,5 +1,7 @@
 'use strict'
 
+const merge = require('merge')
+
 function CToken(key) {
     this.get = () => {
         return localStorage.getItem(key)
@@ -14,11 +16,11 @@ function CToken(key) {
     }
 }
 
-function CAuth() {
+function CAuth(Vue, options) {
     this.token = new CToken('jsonwebtoken')
 
     this.logIn = (username, password, successCallback, errorCallback) => {
-        Vue.http.post('/auth/login', {
+        Vue.http.post(options.loginEndpoint, {
             username,
             password
         }).then((response) => {
@@ -36,30 +38,39 @@ function CAuth() {
     }
 }
 
-const Auth = new CAuth()
-
-function intercept(request, next) {
-    if (request.bearer) {
-        if (!Auth.isLoggedIn()) {
-            next(request.respondWith('', {
-                status: 401,
-                statusText: 'Request demands JWT but user was not logged in'
-            }))
+function interceptionFactory(Auth) {
+    return function(request, next) {
+        if (request.bearer) {
+            if (!Auth.isLoggedIn()) {
+                next(request.respondWith(null, {
+                    status: 401,
+                    statusText:
+                        'Request demands JWT but user was not logged in'
+                }))
+            } else {
+                request.headers.Authorization = 'Bearer ' + Auth.token.get()
+                next()
+            }
         } else {
-            request.headers.Authorization = 'Bearer ' + Auth.token.get()
             next()
         }
-    } else {
-        next()
     }
 }
 
+const defaultOptions = {
+    loginEndpoint: '/auth/login'
+}
+
 function install(Vue, options) {
+    options = merge(defaultOptions, options)
+
+    const Auth = new CAuth(Vue, options)
+
     Object.defineProperty(Vue.prototype, '$auth', {
         value: Auth
     })
 
-    Vue.http.interceptors.push(intercept)
+    Vue.http.interceptors.push(interceptionFactory(Auth))
 }
 
 module.exports = install

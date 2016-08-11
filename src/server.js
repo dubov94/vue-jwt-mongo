@@ -6,15 +6,39 @@ const expressJwt = require('express-jwt')
 const mongoose = require('mongoose')
 const passport = require('passport')
 const passportLocalMongoose = require('passport-local-mongoose')
+const merge = require('merge')
 
+// options: {
+//   mongoUrl: String [ represents database url, required ]
+//   jwtSecret: String [ key used for jwt generation, required ]
+//   userModelName: String [ singular name of mongoose user model, optional ]
+//   jwtExpiresIn: Number [ jwt expiration time in seconds, optional ]
+// }
 function initialize(options) {
+    options = merge({
+        userModelName: 'User',
+        jwtExpiresIn: 7 * 24 * 60 * 60
+    }, options)
+
+    // See http://mongoosejs.com/docs/promises.html.
+    mongoose.Promise = global.Promise
+
     // Create empty schema that is going to be used
     // by passport-local-mongoose.
     const UserSchema = new mongoose.Schema()
     // Now a corresponding model will have methods
     // such as createStrategy() and serializeUser().
     UserSchema.plugin(passportLocalMongoose)
-    const User = mongoose.model('User', UserSchema)
+
+    // Create a separate connection leaving the
+    // possibility of using mongoose.connect() open.
+    const database = mongoose.createConnection(options.mongoUrl, (error) => {
+        if (error) {
+            /* istanbul ignore next */
+            throw error
+        }
+    })
+    const User = database.model(options.userModelName, UserSchema)
 
     // We are following https://github.com/saintedlama/passport-local-mongoose
     // > Simplified Passport Configuration.
@@ -26,22 +50,15 @@ function initialize(options) {
     // Endpoints with this middleware provided check the token for validity
     // and set request.user dictionary to payload.
     const jwtValidator = expressJwt({
-        secret: options.secret
-    })
-
-    // See http://mongoosejs.com/docs/promises.html.
-    mongoose.Promise = global.Promise
-    mongoose.connect(options.mongo, (error) => {
-        if (error) {
-            /* istanbul ignore next */
-            throw error
-        }
+        secret: options.jwtSecret
     })
 
     function loginRespondent(request, response) {
         let token = jsonwebtoken.sign({
             username: request.body.username
-        }, options.secret)
+        }, options.jwtSecret, {
+            expiresIn: options.jwtExpiresIn
+        })
         response.send(token)
     }
 
@@ -74,8 +91,9 @@ function initialize(options) {
         // Passport is looking for fields 'username' and 'password'
         // in the json provided and this is exactly what we are
         // sending from client. See http://passportjs.org/docs > Parameters.
-        loginHandler: [jsonParser, passport.authenticate('local'),
-            loginRespondent
+        loginHandler: [
+            jsonParser, passport.initialize(),
+            passport.authenticate('local'), loginRespondent
         ],
         jwtProtector: [jwtValidator, userValidator]
     }

@@ -27,12 +27,11 @@ describe('Server', () => {
 
     before(() => {
         let vjmServer = VueJwtMongo.Server({
-            mongo: mongoUrl,
-            secret: jwtSecret
+            mongoUrl,
+            jwtSecret
         })
         app = express()
         // app.use(morgan('combined'))
-        app.use(passport.initialize())
         app.post('/auth/register', vjmServer.registerHandler)
         app.post('/auth/login', vjmServer.loginHandler)
         app.get('/protected', vjmServer.jwtProtector, (request, response) => {
@@ -41,8 +40,12 @@ describe('Server', () => {
     })
 
     after((done) => {
-        mongoose.connection.db.dropDatabase((error) => {
-            done()
+        // This is also a test in a sense that the default
+        // mongoose connection object is available.
+        mongoose.connect(mongoUrl, () => {
+            mongoose.connection.db.dropDatabase(() => {
+                done()
+            })
         })
     })
 

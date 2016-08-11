@@ -5,8 +5,11 @@ const jsdom = require('jsdom')
 const domStorage = require('dom-storage')
 const Vue = require('vue')
 const VueJwtMongo = require('../src/index')
+const jsonwebtoken = require('jsonwebtoken')
 
 describe('Client', () => {
+    const validToken = jsonwebtoken.sign(
+        { username: 'login' }, 'shhh', { expiresIn: 60 * 60 })
     let vm, sinon
 
     before((done) => {
@@ -49,10 +52,10 @@ describe('Client', () => {
         })
 
         it('logs in and out with valid credentials', (done) => {
-            server.respond('jwt')
+            server.respond(validToken)
             let errorCallback = sinon.spy()
             vm.$auth.logIn('user', 'pass', () => {
-                assert.strictEqual(vm.$auth.token.get(), 'jwt')
+                assert.strictEqual(vm.$auth.token.get(), validToken)
                 assert.isTrue(vm.$auth.isLoggedIn())
                 vm.$auth.logOut()
                 assert.isFalse(vm.$auth.isLoggedIn())
@@ -95,10 +98,11 @@ describe('Client', () => {
         it('modifies bearer request', (done) => {
             expectXhr((request) => {
                 assert.equal(
-                    request.requestHeaders.Authorization, 'Bearer jwt')
+                    request.requestHeaders.Authorization,
+                    'Bearer ' + validToken)
                 done()
             })
-            vm.$auth.token.set('jwt')
+            vm.$auth.token.set(validToken)
             vm.$http.get('/', {
                 bearer: true
             })
