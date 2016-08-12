@@ -24,11 +24,7 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
 ## Client
 
 ```javascript
-this.$http.post('/auth/register', { 
-  username: 'login', 
-  password: 'pass'
-}, successCallback, errorCallback)
-
+this.$auth.register('login', 'pass', successCallback, errorCallback)
 this.$auth.logIn('login', 'pass', successCallback, errorCallback)
 this.$auth.isLoggedIn()
 this.$auth.logOut()

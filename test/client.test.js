@@ -39,7 +39,7 @@ describe('Client', () => {
         localStorage.clear()
     })
 
-    describe('Login', () => {
+    describe('Register & Login', () => {
         let server
 
         beforeEach(() => {
@@ -51,28 +51,34 @@ describe('Client', () => {
             server.restore()
         })
 
+        it('sends registration request', (done) => {
+            server.respondWith([200, {}, ''])
+            vm.$auth.register('user', 'pass', () => {
+                assert.equal(server.requests[0].url, '/auth/register')
+                done()
+            })
+        })
+
         it('logs in and out with valid credentials', (done) => {
             server.respond(validToken)
-            let errorCallback = sinon.spy()
             vm.$auth.logIn('user', 'pass', () => {
+                assert.equal(server.requests[0].url, '/auth/login')
                 assert.strictEqual(vm.$auth.token.get(), validToken)
                 assert.isTrue(vm.$auth.isLoggedIn())
                 vm.$auth.logOut()
                 assert.isFalse(vm.$auth.isLoggedIn())
                 done()
-            }, errorCallback)
-            assert.isFalse(errorCallback.called)
+            })
         })
 
         it('fires error callback on invalid credentials', (done) => {
             server.respondWith([401, {}, ''])
-            let successCallback = sinon.spy()
-            vm.$auth.logIn('fail', 'fail', successCallback, (response) => {
+            vm.$auth.logIn('fail', 'fail', null, (response) => {
+                assert.equal(server.requests[0].url, '/auth/login')
                 assert.isFalse(vm.$auth.isLoggedIn())
                 assert.equal(response.status, 401)
                 done()
             })
-            assert.isFalse(successCallback.called)
         })
     })
 

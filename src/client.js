@@ -19,6 +19,13 @@ function CToken(key) {
 function CAuth(Vue, options) {
     this.token = new CToken('jsonwebtoken')
 
+    this.register = (username, password, successCallback, errorCallback) => {
+        Vue.http.post(options.registerEndpoint, {
+            username,
+            password
+        }).then(successCallback, errorCallback)
+    }
+
     this.logIn = (username, password, successCallback, errorCallback) => {
         Vue.http.post(options.loginEndpoint, {
             username,
@@ -58,6 +65,7 @@ function interceptionFactory(Auth) {
 }
 
 const defaultOptions = {
+    registerEndpoint: '/auth/register',
     loginEndpoint: '/auth/login'
 }
 
