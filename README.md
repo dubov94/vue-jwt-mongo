@@ -31,7 +31,7 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
 ## Client
 ```javascript
 Vue.use(require('vue-resource'))
-Vue.use(require('vue-jwt-mongo').Client({ /* options */ }))
+Vue.use(require('vue-jwt-mongo').Client, { /* options */ })
 
 this.$auth.register('login', 'pass', successCallback, errorCallback)
 this.$auth.logIn('login', 'pass', successCallback, errorCallback)
