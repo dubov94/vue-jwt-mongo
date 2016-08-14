@@ -21,11 +21,13 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
     console.log(request.user.username)
 })
 ```
+
 ### Options
 * `mongoUrl` (mandatory): address of Mongo database. Used for `mongoose.createConnection`.
 * `jwtSecret` (mandatory): secret key for tokens generation. Used for `jsonwebtoken.sign`. You can get one [here](https://www.grc.com/passwords.htm).
 * `userModelName`: name of [mongoose](http://mongoosejs.com/) model that is used for storing encoded user credentials. Defaults to `User`.
 * `jwtExpiresIn`: tokens expiration time in seconds. Used for `jsonwebtoken.sign`.
+
 ## Client
 ```javascript
 Vue.use(require('vue-resource'))
@@ -39,6 +41,7 @@ this.$auth.logOut()
 ```javascript
 this.$http.get('/protected', { bearer: true }, successCallback, errorCallback)
 ```
+
 ### Options
 * `registerEndpoint`: server endpoint for registration. Defaults to `/auth/register`.
 * `loginEndpoint`: server endpoint for authentication. Defaults to `/auth/login`.
