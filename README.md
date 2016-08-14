@@ -44,7 +44,7 @@ this.$auth.getToken()
 ```
 ```javascript
 /* Authorization: Bearer XXX */
-this.$http.get('/protected', { bearer: true }, successCallback, errorCallback)
+this.$http.get('/protected', { bearer: true }).then(successCallback, errorCallback)
 ```
 
 ### Options
