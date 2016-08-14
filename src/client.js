@@ -1,84 +1,93 @@
 'use strict'
 
-const merge = require('merge')
+module.exports = function(Vue, options) {
+    const merge = require('merge')
+    const jwtDecode = require('jwt-decode')
 
-function CToken(key) {
-    this.get = () => {
-        return localStorage.getItem(key)
+    const sToMs = (seconds) => {
+        return seconds * 1000
     }
 
-    this.set = (value) => {
-        localStorage.setItem(key, value)
+    const defaultOptions = {
+        registerEndpoint: '/auth/register',
+        loginEndpoint: '/auth/login',
+        storageKey: 'jsonwebtoken',
+        bearerLexem: 'Bearer '
     }
 
-    this.remove = () => {
-        localStorage.removeItem(key)
-    }
-}
-
-function CAuth(Vue, options) {
-    this.token = new CToken('jsonwebtoken')
-
-    this.register = (username, password, successCallback, errorCallback) => {
-        Vue.http.post(options.registerEndpoint, {
-            username,
-            password
-        }).then(successCallback, errorCallback)
-    }
-
-    this.logIn = (username, password, successCallback, errorCallback) => {
-        Vue.http.post(options.loginEndpoint, {
-            username,
-            password
-        }).then((response) => {
-            this.token.set(response.text())
-            successCallback()
-        }, errorCallback)
-    }
-
-    this.logOut = () => {
-        this.token.remove()
-    }
-
-    this.isLoggedIn = () => {
-        return this.token.get() !== null
-    }
-}
-
-function interceptionFactory(Auth) {
-    return function(request, next) {
-        if (request.bearer) {
-            if (!Auth.isLoggedIn()) {
-                next(request.respondWith(null, {
-                    status: 401,
-                    statusText:
-                        'Request demands JWT but user was not logged in'
-                }))
-            } else {
-                request.headers.Authorization = 'Bearer ' + Auth.token.get()
-                next()
-            }
-        } else {
-            next()
-        }
-    }
-}
-
-const defaultOptions = {
-    registerEndpoint: '/auth/register',
-    loginEndpoint: '/auth/login'
-}
-
-function install(Vue, options) {
     options = merge(defaultOptions, options)
 
-    const Auth = new CAuth(Vue, options)
+    function CToken() {
+        this.get = () => {
+            return localStorage.getItem(options.storageKey)
+        }
+
+        this.set = (value) => {
+            localStorage.setItem(options.storageKey, value)
+        }
+
+        this.remove = () => {
+            localStorage.removeItem(options.storageKey)
+        }
+    }
+
+    function CAuth() {
+        this.token = new CToken()
+
+        this.register = (username, password, successCallback, errorCallback) => {
+            Vue.http.post(options.registerEndpoint, {
+                username,
+                password
+            }).then(successCallback, errorCallback)
+        }
+
+        this.logIn = (username, password, successCallback, errorCallback) => {
+            Vue.http.post(options.loginEndpoint, {
+                username,
+                password
+            }).then((response) => {
+                this.token.set(response.text())
+                successCallback()
+            }, errorCallback)
+        }
+
+        this.logOut = () => {
+            this.token.remove()
+        }
+
+        this.isLoggedIn = () => {
+            let token = this.token.get()
+            if (token !== null) {
+                let tokenExpMs = sToMs(jwtDecode(token).exp)
+                let nowMs = new Date().getTime()
+                return tokenExpMs - nowMs > sToMs(60)
+            } else {
+                return false
+            }
+        }
+    }
+
+    const Auth = new CAuth()
 
     Object.defineProperty(Vue.prototype, '$auth', {
         value: Auth
     })
 
-    Vue.http.interceptors.push(interceptionFactory(Auth))
+    Vue.http.interceptors.push(function(request, next) {
+        if (request.bearer) {
+            if (!Auth.isLoggedIn()) {
+                return next(request.respondWith(null, {
+                    status: 401,
+                    statusText:
+                        'Request demands JWT but user was not logged in'
+                }))
+            } else {
+                request.headers.Authorization =
+                    options.bearerLexem + Auth.token.get()
+                return next()
+            }
+        } else {
+            return next()
+        }
+    })
 }
-
-module.exports = install

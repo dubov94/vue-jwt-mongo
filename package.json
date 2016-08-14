@@ -1,6 +1,6 @@
 {
   "name": "vue-jwt-mongo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Simple authentication system for Vue.js",
   "main": "src/index.js",
   "scripts": {
@@ -42,6 +42,7 @@
     "body-parser": "^1.15.2",
     "express-jwt": "^3.4.0",
     "jsonwebtoken": "^7.1.7",
+    "jwt-decode": "^2.1.0",
     "merge": "^1.2.0",
     "mongoose": "^4.5.8",
     "passport": "^0.3.2",

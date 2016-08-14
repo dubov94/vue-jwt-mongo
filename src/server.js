@@ -1,20 +1,14 @@
 'use strict'
 
-const bodyParser = require('body-parser')
-const jsonwebtoken = require('jsonwebtoken')
-const expressJwt = require('express-jwt')
-const mongoose = require('mongoose')
-const passport = require('passport')
-const passportLocalMongoose = require('passport-local-mongoose')
-const merge = require('merge')
+module.exports = function(options) {
+    const bodyParser = require('body-parser')
+    const jsonwebtoken = require('jsonwebtoken')
+    const expressJwt = require('express-jwt')
+    const mongoose = require('mongoose')
+    const passport = require('passport')
+    const passportLocalMongoose = require('passport-local-mongoose')
+    const merge = require('merge')
 
-// options: {
-//   mongoUrl: String [ represents database url, required ]
-//   jwtSecret: String [ key used for jwt generation, required ]
-//   userModelName: String [ singular name of mongoose user model, optional ]
-//   jwtExpiresIn: Number [ jwt expiration time in seconds, optional ]
-// }
-function initialize(options) {
     options = merge({
         userModelName: 'User',
         jwtExpiresIn: 7 * 24 * 60 * 60
@@ -81,7 +75,7 @@ function initialize(options) {
             if (error || user === null) {
                 response.sendStatus(400)
             } else {
-                next()
+                return next()
             }
         })
     }
@@ -98,5 +92,3 @@ function initialize(options) {
         jwtProtector: [jwtValidator, userValidator]
     }
 }
-
-module.exports = initialize
