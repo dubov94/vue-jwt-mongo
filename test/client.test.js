@@ -51,9 +51,10 @@ describe('Client', () => {
             server.restore()
         })
 
-        it('sends registration request', (done) => {
+        it('sends registration request and sets correct context', (done) => {
             server.respondWith([200, {}, ''])
-            vm.$auth.register('user', 'pass', () => {
+            vm.$auth.register('user', 'pass', function() {
+                assert.strictEqual(this, vm)
                 assert.equal(server.requests[0].url, '/auth/register')
                 done()
             })
@@ -61,9 +62,10 @@ describe('Client', () => {
 
         it('logs in and out with valid credentials', (done) => {
             server.respond(validToken)
-            vm.$auth.logIn('user', 'pass', () => {
+            vm.$auth.logIn('user', 'pass', function() {
+                assert.strictEqual(this, vm)
                 assert.equal(server.requests[0].url, '/auth/login')
-                assert.strictEqual(vm.$auth.token.get(), validToken)
+                assert.strictEqual(vm.$auth.getToken(), validToken)
                 assert.isTrue(vm.$auth.isLoggedIn())
                 vm.$auth.logOut()
                 assert.isFalse(vm.$auth.isLoggedIn())
@@ -73,7 +75,8 @@ describe('Client', () => {
 
         it('fires error callback on invalid credentials', (done) => {
             server.respondWith([401, {}, ''])
-            vm.$auth.logIn('fail', 'fail', null, (response) => {
+            vm.$auth.logIn('fail', 'fail', null, function(response) {
+                assert.strictEqual(this, vm)
                 assert.equal(server.requests[0].url, '/auth/login')
                 assert.isFalse(vm.$auth.isLoggedIn())
                 assert.equal(response.status, 401)
@@ -108,7 +111,7 @@ describe('Client', () => {
                     'Bearer ' + validToken)
                 done()
             })
-            vm.$auth.token.set(validToken)
+            localStorage['jsonwebtoken'] = validToken
             vm.$http.get('/', {
                 bearer: true
             })

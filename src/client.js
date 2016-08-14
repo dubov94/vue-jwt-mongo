@@ -17,7 +17,7 @@ module.exports = function(Vue, options) {
 
     options = merge(defaultOptions, options)
 
-    function CToken() {
+    const Token = new function() {
         this.get = () => {
             return localStorage.getItem(options.storageKey)
         }
@@ -29,34 +29,9 @@ module.exports = function(Vue, options) {
         this.remove = () => {
             localStorage.removeItem(options.storageKey)
         }
-    }
 
-    function CAuth() {
-        this.token = new CToken()
-
-        this.register = (username, password, successCallback, errorCallback) => {
-            Vue.http.post(options.registerEndpoint, {
-                username,
-                password
-            }).then(successCallback, errorCallback)
-        }
-
-        this.logIn = (username, password, successCallback, errorCallback) => {
-            Vue.http.post(options.loginEndpoint, {
-                username,
-                password
-            }).then((response) => {
-                this.token.set(response.text())
-                successCallback()
-            }, errorCallback)
-        }
-
-        this.logOut = () => {
-            this.token.remove()
-        }
-
-        this.isLoggedIn = () => {
-            let token = this.token.get()
+        this.valid = () => {
+            let token = this.get()
             if (token !== null) {
                 let tokenExpMs = sToMs(jwtDecode(token).exp)
                 let nowMs = new Date().getTime()
@@ -67,23 +42,45 @@ module.exports = function(Vue, options) {
         }
     }
 
-    const Auth = new CAuth()
+
+    function Auth(instance) {
+        this.register = (username, password, successCallback, errorCallback) => {
+            instance.$http
+                .post(options.registerEndpoint, { username, password })
+                .bind(instance)
+                .then(successCallback, errorCallback)
+        }
+
+        this.logIn = (username, password, successCallback, errorCallback) => {
+            instance.$http
+                .post(options.loginEndpoint, { username, password })
+                .bind(instance)
+                .then(function(response) {
+                    Token.set(response.text())
+                    successCallback.call(this)
+                }, errorCallback)
+        }
+
+        this.logOut = Token.remove
+        this.isLoggedIn = Token.valid
+        this.getToken = Token.get
+    }
 
     Object.defineProperty(Vue.prototype, '$auth', {
-        value: Auth
+        get: function() {
+            return new Auth(this)
+        }
     })
 
     Vue.http.interceptors.push(function(request, next) {
         if (request.bearer) {
-            if (!Auth.isLoggedIn()) {
+            if (!Token.valid()) {
                 return next(request.respondWith(null, {
                     status: 401,
-                    statusText:
-                        'Request demands JWT but user was not logged in'
+                    statusText: 'Request demands JWT but user was not logged in'
                 }))
             } else {
-                request.headers.Authorization =
-                    options.bearerLexem + Auth.token.get()
+                request.headers.Authorization = options.bearerLexem + Token.get()
                 return next()
             }
         } else {

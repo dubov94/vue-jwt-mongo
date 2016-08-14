@@ -39,6 +39,11 @@ this.$auth.isLoggedIn()
 this.$auth.logOut()
 ```
 ```javascript
+/* token or null */
+this.$auth.getToken()
+```
+```javascript
+/* Authorization: Bearer XXX */
 this.$http.get('/protected', { bearer: true }, successCallback, errorCallback)
 ```
 
