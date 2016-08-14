@@ -4,7 +4,7 @@
 [![Build](https://travis-ci.org/dubov94/vue-jwt-mongo.svg?branch=master)](https://travis-ci.org/dubov94/vue-jwt-mongo)
 [![Coverage](https://codecov.io/gh/dubov94/vue-jwt-mongo/branch/master/graph/badge.svg)](https://codecov.io/gh/dubov94/vue-jwt-mongo)
 
-This package is aimed for bootstrapping simple JSON Web Token based authentication system using [Vue.js](https://www.grc.com/passwords.htm), [MongoDB](https://www.mongodb.com/) and [Express.js](https://expressjs.com/).
+This package is aimed for bootstrapping a simple JSON Web Token based authentication system using [Vue.js](https://www.grc.com/passwords.htm), [MongoDB](https://www.mongodb.com/) and [Express.js](https://expressjs.com/).
 
 ## Server
 ```javascript
@@ -31,7 +31,7 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
 ## Client
 ```javascript
 Vue.use(require('vue-resource'))
-Vue.use(require('vue-jwt-mongo').Client)
+Vue.use(require('vue-jwt-mongo').Client({ /* options */ }))
 
 this.$auth.register('login', 'pass', successCallback, errorCallback)
 this.$auth.logIn('login', 'pass', successCallback, errorCallback)
