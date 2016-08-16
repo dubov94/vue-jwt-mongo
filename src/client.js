@@ -42,23 +42,18 @@ module.exports = function(Vue, options) {
         }
     }
 
-
     function Auth(instance) {
-        this.register = (username, password, successCallback, errorCallback) => {
-            instance.$http
+        this.register = (username, password) => {
+            return instance.$http
                 .post(options.registerEndpoint, { username, password })
                 .bind(instance)
-                .then(successCallback, errorCallback)
         }
 
-        this.logIn = (username, password, successCallback, errorCallback) => {
-            instance.$http
+        this.logIn = (username, password) => {
+            return instance.$http
                 .post(options.loginEndpoint, { username, password })
                 .bind(instance)
-                .then(function(response) {
-                    Token.set(response.text())
-                    successCallback.call(this)
-                }, errorCallback)
+                .then((response) => { Token.set(response.text()) })
         }
 
         this.logOut = Token.remove

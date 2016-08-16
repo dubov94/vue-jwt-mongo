@@ -33,8 +33,8 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
 Vue.use(require('vue-resource'))
 Vue.use(require('vue-jwt-mongo').Client, { /* options */ })
 
-this.$auth.register('login', 'pass', successCallback, errorCallback)
-this.$auth.logIn('login', 'pass', successCallback, errorCallback)
+this.$auth.register('login', 'pass').then(...)
+this.$auth.logIn('login', 'pass').then(...)
 this.$auth.isLoggedIn()
 this.$auth.logOut()
 ```
@@ -44,11 +44,11 @@ this.$auth.getToken()
 ```
 ```javascript
 /* Authorization: Bearer XXX */
-this.$http.get('/protected', { bearer: true }).then(successCallback, errorCallback)
+this.$http.get('/protected', { bearer: true }).then(...)
 ```
 
 ### Options
 * `registerEndpoint`: server endpoint for registration. Defaults to `/auth/register`.
 * `loginEndpoint`: server endpoint for authentication. Defaults to `/auth/login`.
-* `storageKey`: localStorage key used for saving a token.
+* `storageKey`: localStorage key used for saving a token. Defaults to `jsonwebtoken`.
 * `bearerLexem`: a lexem prepending tokens in Authorization headers. Defaults to `Bearer `.
