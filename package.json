@@ -1,6 +1,6 @@
 {
   "name": "vue-jwt-mongo",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Simple authentication system for Vue.js",
   "main": "src/index.js",
   "scripts": {
@@ -13,9 +13,9 @@
   },
   "keywords": [
     "vue",
-    "vue.js",
     "jwt",
     "jsonwebtoken",
+    "express",
     "mongo",
     "mongodb",
     "auth",

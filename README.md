@@ -17,6 +17,7 @@ const vjmServer = require('vue-jwt-mongo').Server({
 
 app.post('/auth/register', vjmServer.registerHandler)
 app.post('/auth/login', vjmServer.loginHandler)
+app.post('/auth/refresh', vjmServer.refreshHandler)
 app.get('/protected', vjmServer.jwtProtector, (request, response) => {
     console.log(request.user.username)
 })
@@ -26,7 +27,7 @@ app.get('/protected', vjmServer.jwtProtector, (request, response) => {
 * `mongoUrl` (mandatory): address of Mongo database. Used for `mongoose.createConnection`.
 * `jwtSecret` (mandatory): secret key for tokens generation. Used for `jsonwebtoken.sign`. You can get one [here](https://www.grc.com/passwords.htm).
 * `userModelName`: name of [mongoose](http://mongoosejs.com/) model that is used for storing encoded user credentials. Defaults to `User`.
-* `jwtExpiresIn`: tokens expiration time in seconds. Used for `jsonwebtoken.sign`.
+* `jwtExpiresIn`: tokens expiration time in seconds. Used for `jsonwebtoken.sign`. Defaults to one week.
 
 ## Client
 ```javascript
@@ -35,6 +36,7 @@ Vue.use(require('vue-jwt-mongo').Client, { /* options */ })
 
 this.$auth.register('login', 'pass').then(...)
 this.$auth.logIn('login', 'pass').then(...)
+this.$auth.refresh().catch(...)
 this.$auth.isLoggedIn()
 this.$auth.logOut()
 ```
@@ -50,5 +52,6 @@ this.$http.get('/protected', { bearer: true }).then(...)
 ### Options
 * `registerEndpoint`: server endpoint for registration. Defaults to `/auth/register`.
 * `loginEndpoint`: server endpoint for authentication. Defaults to `/auth/login`.
+* `refreshEndpoint`: server endpoint for token refresh. Defaults to `/auth/refresh`.
 * `storageKey`: localStorage key used for saving a token. Defaults to `jsonwebtoken`.
 * `bearerLexem`: a lexem prepending tokens in Authorization headers. Defaults to `Bearer `.

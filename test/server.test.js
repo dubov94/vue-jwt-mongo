@@ -34,6 +34,7 @@ describe('Server', () => {
         // app.use(morgan('combined'))
         app.post('/auth/register', vjmServer.registerHandler)
         app.post('/auth/login', vjmServer.loginHandler)
+        app.post('/auth/refresh', vjmServer.refreshHandler)
         app.get('/protected', vjmServer.jwtProtector, (request, response) => {
             response.sendStatus(200)
         })
@@ -103,6 +104,49 @@ describe('Server', () => {
 
         it('with malformed json', (done) => {
             testStatus({}, 400, done)
+        })
+    })
+
+    describe('Refresh', () => {
+        before((done) => {
+            chai.request(app)
+                .post('/auth/login')
+                .send(user.credentials)
+                .end((error, response) => {
+                    user.signature = response.text
+                    done()
+                })
+        })
+
+        let testCallback = (token, callback, done) => {
+            chai.request(app)
+                .post('/auth/refresh')
+                .set('Authorization', 'Bearer ' + token)
+                .end((error, response) => {
+                    callback(error, response)
+                    done()
+                })
+        }
+
+        it('saves updated token', (done) => {
+            let oldToken = jsonwebtoken.verify(user.signature, jwtSecret);
+            setTimeout(() => {
+                testCallback(user.signature, (error, response) => {
+                    let newToken = jsonwebtoken.verify(response.text, jwtSecret)
+                    assert.equal(oldToken.username, newToken.username)
+                    assert.isAbove(newToken.exp, oldToken.exp)
+                    user.signature = response.text
+                }, done)
+            }, 1000)
+        })
+
+        it('rejects inexistant username', (done) => {
+            testCallback(
+                jsonwebtoken.sign({
+                    username: 'foo'
+                }, jwtSecret), (error, response) => {
+                    assert.equal(response.status, 400)
+                }, done)
         })
     })
 

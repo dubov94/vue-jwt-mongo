@@ -47,16 +47,17 @@ module.exports = function(options) {
         secret: options.jwtSecret
     })
 
-    function loginRespondent(request, response) {
-        let token = jsonwebtoken.sign({
-            username: request.body.username
-        }, options.jwtSecret, {
+    function generateToken(username) {
+        return jsonwebtoken.sign({ username }, options.jwtSecret, {
             expiresIn: options.jwtExpiresIn
         })
-        response.send(token)
     }
 
-    function registerRespondent(request, response, next) {
+    function loginRespondent(request, response) {
+        response.send(generateToken(request.body.username))
+    }
+
+    function registerRespondent(request, response) {
         User.register(new User({
             username: request.body.username
         }), request.body.password, (error) => {
@@ -66,6 +67,10 @@ module.exports = function(options) {
                 response.sendStatus(200)
             }
         })
+    }
+
+    function refreshRespondent(request, response) {
+        response.send(generateToken(request.user.username))
     }
 
     function userValidator(request, response, next) {
@@ -80,6 +85,8 @@ module.exports = function(options) {
         })
     }
 
+    const jwtProtector = [jwtValidator, userValidator]
+
     return {
         registerHandler: [jsonParser, registerRespondent],
         // Passport is looking for fields 'username' and 'password'
@@ -89,6 +96,7 @@ module.exports = function(options) {
             jsonParser, passport.initialize(),
             passport.authenticate('local'), loginRespondent
         ],
-        jwtProtector: [jwtValidator, userValidator]
+        refreshHandler: [jwtProtector, refreshRespondent],
+        jwtProtector
     }
 }

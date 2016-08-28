@@ -8,8 +8,9 @@ const VueJwtMongo = require('../src/index')
 const jsonwebtoken = require('jsonwebtoken')
 
 describe('Client', () => {
-    const validToken = jsonwebtoken.sign(
+    const generateToken = () => jsonwebtoken.sign(
         { username: 'login' }, 'shhh', { expiresIn: 60 * 60 })
+    const validToken = generateToken()
     let vm, sinon
 
     before((done) => {
@@ -39,7 +40,7 @@ describe('Client', () => {
         localStorage.clear()
     })
 
-    describe('Register & Login', () => {
+    describe('Register, Login & Refresh', () => {
         let server
 
         beforeEach(() => {
@@ -83,6 +84,21 @@ describe('Client', () => {
                 done()
             })
         })
+
+        it('saves updated token', (done) => {
+            let newToken = generateToken()
+            server.respond(newToken)
+            localStorage['jsonwebtoken'] = validToken
+            vm.$auth.refresh().then(function() {
+                let request = server.requests[0]
+                assert.equal(request.url, '/auth/refresh')
+                assert.equal(request.requestHeaders.Authorization,
+                    'Bearer ' + validToken)
+                assert.equal(vm.$auth.getToken(), newToken)
+                vm.$auth.logOut()
+                done()
+            })
+        })
     })
 
     describe('Interception', () => {
@@ -102,7 +118,6 @@ describe('Client', () => {
         afterEach(() => {
             xhr.restore()
         })
-
 
         it('modifies bearer request', (done) => {
             expectXhr((request) => {

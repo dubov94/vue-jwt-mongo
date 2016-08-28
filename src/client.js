@@ -11,6 +11,7 @@ module.exports = function(Vue, options) {
     const defaultOptions = {
         registerEndpoint: '/auth/register',
         loginEndpoint: '/auth/login',
+        refreshEndpoint: '/auth/refresh',
         storageKey: 'jsonwebtoken',
         bearerLexem: 'Bearer '
     }
@@ -52,6 +53,13 @@ module.exports = function(Vue, options) {
         this.logIn = (username, password) => {
             return instance.$http
                 .post(options.loginEndpoint, { username, password })
+                .bind(instance)
+                .then((response) => { Token.set(response.text()) })
+        }
+
+        this.refresh = () => {
+            return instance.$http
+                .post(options.refreshEndpoint, null, { bearer: true })
                 .bind(instance)
                 .then((response) => { Token.set(response.text()) })
         }
