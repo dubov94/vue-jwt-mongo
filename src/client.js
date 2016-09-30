@@ -1,9 +1,9 @@
 'use strict'
 
-module.exports = function(Vue, options) {
-    const merge = require('merge')
-    const jwtDecode = require('jwt-decode')
+const merge = require('merge')
+const jwtDecode = require('jwt-decode')
 
+function installVuePlugin(Vue, options) {
     const sToMs = (seconds) => {
         return seconds * 1000
     }
@@ -90,4 +90,8 @@ module.exports = function(Vue, options) {
             return next()
         }
     })
+}
+
+module.exports = {
+    Client: installVuePlugin
 }

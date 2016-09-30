@@ -1,14 +1,14 @@
 'use strict'
 
-module.exports = function(options) {
-    const bodyParser = require('body-parser')
-    const jsonwebtoken = require('jsonwebtoken')
-    const expressJwt = require('express-jwt')
-    const mongoose = require('mongoose')
-    const passport = require('passport')
-    const passportLocalMongoose = require('passport-local-mongoose')
-    const merge = require('merge')
+const bodyParser = require('body-parser')
+const jsonwebtoken = require('jsonwebtoken')
+const expressJwt = require('express-jwt')
+const mongoose = require('mongoose')
+const passport = require('passport')
+const passportLocalMongoose = require('passport-local-mongoose')
+const merge = require('merge')
 
+function initializeExpressMiddlewares(options) {
     options = merge({
         userModelName: 'User',
         jwtExpiresIn: 7 * 24 * 60 * 60
@@ -99,4 +99,8 @@ module.exports = function(options) {
         refreshHandler: [jwtProtector, refreshRespondent],
         jwtProtector
     }
+}
+
+module.exports = {
+    Server: initializeExpressMiddlewares
 }

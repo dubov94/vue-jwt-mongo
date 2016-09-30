@@ -4,7 +4,7 @@ const assert = require('chai').assert
 const jsdom = require('jsdom')
 const domStorage = require('dom-storage')
 const Vue = require('vue')
-const VueJwtMongo = require('../src/index')
+const VueJwtMongo = require('../src/client')
 const jsonwebtoken = require('jsonwebtoken')
 
 describe('Client', () => {

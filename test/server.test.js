@@ -1,6 +1,6 @@
 'use strict'
 
-const VueJwtMongo = require('../src/index')
+const VueJwtMongo = require('../src/server')
 const express = require('express')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
