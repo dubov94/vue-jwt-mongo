@@ -46,6 +46,22 @@ describe('Client', () => {
         beforeEach(() => {
             server = sinon.fakeServer.create()
             server.respondImmediately = true
+
+            // TODO: remove the following workaround
+            // when https://github.com/vuejs/vue-resource/issues/440
+            // is resolved.
+            let fakeXhr = sinon.FakeXMLHttpRequest
+            let xhrOnCreate = fakeXhr.onCreate.bind(fakeXhr)
+            fakeXhr.onCreate = (request) => {
+                xhrOnCreate(request)
+
+                delete request.responseType
+                let xhrSend = request.send.bind(request)
+                request.send = function(data) {
+                    request.responseType = ''
+                    xhrSend(data)
+                }
+            }
         })
 
         afterEach(() => {
@@ -62,7 +78,7 @@ describe('Client', () => {
         })
 
         it('logs in and out with valid credentials', (done) => {
-            server.respond(validToken)
+            server.respondWith(validToken)
             vm.$auth.logIn('user', 'pass').then(function() {
                 assert.strictEqual(this, vm)
                 assert.equal(server.requests[0].url, '/auth/login')
@@ -87,7 +103,7 @@ describe('Client', () => {
 
         it('saves updated token', (done) => {
             let newToken = generateToken()
-            server.respond(newToken)
+            server.respondWith(newToken)
             localStorage['jsonwebtoken'] = validToken
             vm.$auth.refresh().then(function() {
                 let request = server.requests[0]

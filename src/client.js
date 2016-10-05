@@ -54,14 +54,14 @@ function installVuePlugin(Vue, options) {
             return instance.$http
                 .post(options.loginEndpoint, { username, password })
                 .bind(instance)
-                .then((response) => { Token.set(response.text()) })
+                .then((response) => { Token.set(response.body) })
         }
 
         this.refresh = () => {
             return instance.$http
                 .post(options.refreshEndpoint, null, { bearer: true })
                 .bind(instance)
-                .then((response) => { Token.set(response.text()) })
+                .then((response) => { Token.set(response.body) })
         }
 
         this.logOut = Token.remove
@@ -83,7 +83,8 @@ function installVuePlugin(Vue, options) {
                     statusText: 'Request demands JWT but user was not logged in'
                 }))
             } else {
-                request.headers.Authorization = options.bearerLexem + Token.get()
+                request.headers.set('Authorization',
+                    options.bearerLexem + Token.get())
                 return next()
             }
         } else {
