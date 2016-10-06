@@ -152,7 +152,7 @@ describe('Client', () => {
             vm.$http.get('/', {
                 bearer: true
             }).then(null, (response) => {
-                assert.isEqual(response.status, 401)
+                assert.equal(response.status, 401)
             })
         })
 
