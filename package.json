@@ -2,11 +2,12 @@
   "name": "vue-jwt-mongo",
   "version": "1.3.2",
   "description": "Simple authentication system for Vue.js",
-  "main": "src/server.js",
-  "browser": "src/client.js",
+  "main": "dist/server.js",
+  "browser": "dist/client.js",
   "scripts": {
     "test": "mocha",
-    "coverage": "istanbul cover _mocha --report lcovonly -- -R spec"
+    "coverage": "istanbul cover _mocha --report lcovonly -- -R spec",
+    "deploy": "babel src --out-dir dist"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
   },
   "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
   "devDependencies": {
+    "babel-preset-es2015": "^6.16.0",
     "chai": "^3.5.0",
     "chai-http": "^3.0.0",
     "dom-storage": "^2.0.2",
