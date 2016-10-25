@@ -3,9 +3,8 @@ node_js:
   - "node"
 install:
   - npm install
-  - npm install -g mocha istanbul codecov
 services:
   - mongodb
 script:
   - npm run coverage
-  - codecov
+  - ./node_modules/.bin/codecov
