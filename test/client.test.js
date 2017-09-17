@@ -13,26 +13,23 @@ describe('Client', () => {
     const validToken = generateToken()
     let vm, sinon
 
-    before((done) => {
-        jsdom.env('', (error, window) => {
-            global.window = window
-            global.document = window.document
-            global.location = window.location
-            global.XMLHttpRequest = window.XMLHttpRequest
-            global.localStorage = new domStorage(null, {
-                strict: true
-            })
-            global.Vue = Vue
-
-            // XMLHttpRequest should be defined in globals earlier than
-            // sinon requirement happens (see getWorkingXHR() in sinon).
-            sinon = require('sinon')
-
-            Vue.use(require('vue-resource'))
-            Vue.use(VueJwtMongo.Client)
-
-            done(error)
+    before(() => {
+        const { window } = new jsdom.JSDOM('');
+        global.window = window
+        global.document = window.document
+        global.location = window.location
+        global.XMLHttpRequest = window.XMLHttpRequest
+        global.localStorage = new domStorage(null, {
+            strict: true
         })
+        global.Vue = Vue
+
+        // XMLHttpRequest should be defined in globals earlier than
+        // sinon requirement happens (see getWorkingXHR() in sinon).
+        sinon = require('sinon')
+
+        Vue.use(require('vue-resource'))
+        Vue.use(VueJwtMongo.Client)
     })
 
     beforeEach(() => {
