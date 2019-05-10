@@ -1,10 +1,10 @@
 'use strict'
 
-const assert = require('chai').assert
-const jsdom = require('jsdom')
-const domStorage = require('dom-storage')
 const Vue = require('vue')
-const VueJwtMongo = require('../src/client')
+const VueJwtMongo = require('../source/client')
+const assert = require('chai').assert
+const domStorage = require('dom-storage')
+const jsdom = require('jsdom')
 const jsonwebtoken = require('jsonwebtoken')
 
 describe('Client', () => {

@@ -1,13 +1,11 @@
 'use strict'
 
-const VueJwtMongo = require('../src/server')
-const express = require('express')
+const VueJwtMongo = require('../source/server')
 const chai = require('chai')
 const chaiHttp = require('chai-http')
-const mongoose = require('mongoose')
-const passport = require('passport')
+const express = require('express')
 const jsonwebtoken = require('jsonwebtoken')
-const morgan = require('morgan')
+const mongoose = require('mongoose')
 
 chai.use(chaiHttp)
 const assert = chai.assert
@@ -31,7 +29,7 @@ describe('Server', () => {
             jwtSecret
         })
         app = express()
-        // app.use(morgan('combined'))
+        // One can use https://www.npmjs.com/package/morgan for debugging.
         app.post('/auth/register', vjmServer.registerHandler)
         app.post('/auth/login', vjmServer.loginHandler)
         app.post('/auth/refresh', vjmServer.refreshHandler)

@@ -1,12 +1,12 @@
 'use strict'
 
 const bodyParser = require('body-parser')
-const jsonwebtoken = require('jsonwebtoken')
 const expressJwt = require('express-jwt')
+const jsonwebtoken = require('jsonwebtoken')
+const merge = require('merge')
 const mongoose = require('mongoose')
 const passport = require('passport')
 const passportLocalMongoose = require('passport-local-mongoose')
-const merge = require('merge')
 
 function initializeExpressMiddlewares(options) {
     options = merge({
