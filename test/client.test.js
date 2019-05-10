@@ -44,9 +44,7 @@ describe('Client', () => {
             server = sinon.fakeServer.create()
             server.respondImmediately = true
 
-            // TODO: remove the following workaround
-            // when https://github.com/vuejs/vue-resource/issues/440
-            // is resolved.
+            // See https://github.com/vuejs/vue-resource/issues/440.
             let fakeXhr = sinon.FakeXMLHttpRequest
             let xhrOnCreate = fakeXhr.onCreate.bind(fakeXhr)
             fakeXhr.onCreate = (request) => {
