@@ -41,11 +41,15 @@ describe('Server', () => {
     after((done) => {
         // This is also a test in a sense that the default
         // mongoose connection object is available.
-        mongoose.connect(mongoUrl, () => {
-            mongoose.connection.db.dropDatabase(() => {
-                done()
-            })
-        })
+        mongoose.connect(
+            mongoUrl,
+            { useMongoClient: true },
+            () => {
+                mongoose.connection.db.dropDatabase(() => {
+                    done()
+                })
+            }
+        )
     })
 
     describe('Registration', () => {
@@ -53,7 +57,7 @@ describe('Server', () => {
             chai.request(app)
                 .post('/auth/register')
                 .send(credentials)
-                .end((error, response) => {
+                .end((error, response) => {  
                     assert.equal(response.status, expectedStatus)
                     done()
                 })

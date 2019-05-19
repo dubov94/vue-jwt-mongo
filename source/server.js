@@ -26,12 +26,16 @@ function initializeExpressMiddlewares(options) {
 
     // Create a separate connection leaving the
     // possibility of using mongoose.connect() open.
-    const database = mongoose.createConnection(options.mongoUrl, (error) => {
-        if (error) {
-            /* istanbul ignore next */
-            throw error
+    const database = mongoose.createConnection(
+        options.mongoUrl,
+        { useMongoClient: true },
+        (error) => {
+            if (error) {
+                /* istanbul ignore next */
+                throw error
+            }
         }
-    })
+    )
     const User = database.model(options.userModelName, UserSchema)
 
     // We are following https://github.com/saintedlama/passport-local-mongoose
