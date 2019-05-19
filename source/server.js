@@ -89,7 +89,18 @@ function initializeExpressMiddlewares(options) {
         })
     }
 
-    const jwtProtector = [jwtValidator, userValidator]
+    const jwtProtector = [
+        function(request, response, next) {
+            jwtValidator(request, response, function(error) {
+                if (error !== undefined && error.name === 'UnauthorizedError') {
+                    response.sendStatus(401)
+                } else {
+                    next(error)
+                }
+            })
+        },
+        userValidator
+    ]
 
     return {
         registerHandler: [jsonParser, registerRespondent],
