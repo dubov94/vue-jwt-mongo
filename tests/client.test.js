@@ -10,8 +10,10 @@ const jsonwebtoken = require('jsonwebtoken')
 describe('Client', () => {
     const generateToken = () => jsonwebtoken.sign(
         { username: 'login' }, 'shhh', { expiresIn: 60 * 60 })
-    const validToken = generateToken()
-    let vm, sinon
+    const originalToken = generateToken()
+
+    let sinon = null
+    let vm = null
 
     before(() => {
         const { window } = new jsdom.JSDOM('');
@@ -37,7 +39,7 @@ describe('Client', () => {
         localStorage.clear()
     })
 
-    describe('Register, Login & Refresh', () => {
+    describe('$auth.register, $auth.logIn & $auth.refresh', () => {
         let server
 
         beforeEach(() => {
@@ -63,7 +65,10 @@ describe('Client', () => {
             server.restore()
         })
 
-        it('sends registration request and sets correct context', (done) => {
+        it([
+            'sends a request to /auth/register',
+            'sets the correct context in `then`'
+        ].join('\n'), (done) => {
             server.respondWith([200, {}, ''])
             vm.$auth.register('user', 'pass').then(function() {
                 assert.strictEqual(this, vm)
@@ -72,12 +77,16 @@ describe('Client', () => {
             })
         })
 
-        it('logs in and out with valid credentials', (done) => {
-            server.respondWith(validToken)
+        it([
+            'sends a request to /auth/login with valid credentials',
+            'receives a token and makes $auth.getToken return it',
+            'a call to $auth.logOut makes $auth.isLoggedIn false'
+        ].join('\n'), (done) => {
+            server.respondWith(originalToken)
             vm.$auth.logIn('user', 'pass').then(function() {
                 assert.strictEqual(this, vm)
                 assert.equal(server.requests[0].url, '/auth/login')
-                assert.strictEqual(vm.$auth.getToken(), validToken)
+                assert.strictEqual(vm.$auth.getToken(), originalToken)
                 assert.isTrue(vm.$auth.isLoggedIn())
                 vm.$auth.logOut()
                 assert.isFalse(vm.$auth.isLoggedIn())
@@ -85,7 +94,10 @@ describe('Client', () => {
             })
         })
 
-        it('fires error callback on invalid credentials', (done) => {
+        it([
+            'sends a request to /auth/login with invalid credentials',
+            'receives an erroneous status and calls `catch`'
+        ].join('\n'), (done) => {
             server.respondWith([401, {}, ''])
             vm.$auth.logIn('fail', 'fail').catch(function(response) {
                 assert.strictEqual(this, vm)
@@ -96,15 +108,15 @@ describe('Client', () => {
             })
         })
 
-        it('saves updated token', (done) => {
+        it(['$auth.refresh'].join('\n'), (done) => {
             let newToken = generateToken()
             server.respondWith(newToken)
-            localStorage['jsonwebtoken'] = validToken
+            localStorage['jsonwebtoken'] = originalToken
             vm.$auth.refresh().then(function() {
                 let request = server.requests[0]
                 assert.equal(request.url, '/auth/refresh')
                 assert.equal(request.requestHeaders.Authorization,
-                    'Bearer ' + validToken)
+                    'Bearer ' + originalToken)
                 assert.equal(vm.$auth.getToken(), newToken)
                 vm.$auth.logOut()
                 done()
@@ -112,15 +124,16 @@ describe('Client', () => {
         })
     })
 
-    describe('Interception', () => {
-        let xhr,
-            expectXhr = (expectation) => {
-                xhr.onCreate = (request) => {
-                    request.send = () => {
-                        expectation(request)
-                    }
+    describe('vue-resource', () => {
+        const expectXhr = (expectation) => {
+            xhr.onCreate = (request) => {
+                request.send = () => {
+                    expectation(request)
                 }
             }
+        }
+
+        let xhr = null
 
         beforeEach(() => {
             xhr = sinon.useFakeXMLHttpRequest()
@@ -130,20 +143,20 @@ describe('Client', () => {
             xhr.restore()
         })
 
-        it('modifies bearer request', (done) => {
+        it('gets `bearer` => appends Authorization header', (done) => {
             expectXhr((request) => {
                 assert.equal(
                     request.requestHeaders.Authorization,
-                    'Bearer ' + validToken)
+                    'Bearer ' + originalToken)
                 done()
             })
-            localStorage['jsonwebtoken'] = validToken
+            localStorage['jsonwebtoken'] = originalToken
             vm.$http.get('/', {
                 bearer: true
             })
         })
 
-        it('responses 401 if user is not logged in', () => {
+        it('gets `bearer` when there is no token => throws 401', () => {
             vm.$http.get('/', {
                 bearer: true
             }).then(null, (response) => {
@@ -151,7 +164,7 @@ describe('Client', () => {
             })
         })
 
-        it('skips no-bearer request', (done) => {
+        it('does not get `bearer` => forwards the request as-is', (done) => {
             expectXhr(() => {
                 done()
             })
