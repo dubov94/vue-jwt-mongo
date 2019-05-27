@@ -10,179 +10,187 @@ const mongoose = require('mongoose')
 chai.use(chaiHttp)
 const assert = chai.assert
 
-// Tests are dependant on order.
 describe('Server', () => {
-    const mongoUrl = 'mongodb://localhost/vjmt'
-    const jwtSecret = 'shhh'
-    let user = {
-        credentials: {
-            username: 'login',
-            password: 'pass'
-        },
-        signature: null
+    const DEFAULT_PASSWORD = 'password'
+    const JWT_SECRET = 'shhh'
+    const MONGO_URL = 'mongodb://localhost/vjmt'
+
+    let application = null
+    let userCounter = 0
+
+    const getNextUserName = () => `user-${userCounter++}`
+    const generateCredentials = () => ({
+        username: getNextUserName(),
+        password: DEFAULT_PASSWORD
+    })
+
+    const makeAuthRegisterRequest = (credentials, callback) => {
+        chai.request(application)
+            .post('/auth/register')
+            .send(credentials)
+            .end(callback)
     }
-    let app
+    const makeAuthLoginRequest = (credentials, callback) => {
+        chai.request(application)
+            .post('/auth/login')
+            .send(credentials)
+            .end(callback)
+    }
+    const makeAuthRefreshRequest = (token, callback) => {
+        chai.request(application)
+            .post('/auth/refresh')
+            .set('Authorization', 'Bearer ' + token)
+            .end(callback)
+    }
+    const makeProtectedRequest = (token, callback) => {
+        chai.request(application)
+            .get('/protected')
+            .set('Authorization', 'Bearer ' + token)
+            .end(callback)
+    }
+
+    const assertResponseStatusCallDone = (status, done) => {
+        return (error, response) => {
+            assert.equal(response.status, status)
+            done()
+        }
+    }
 
     before(() => {
         let vjmServer = VueJwtMongo.Server({
-            mongoUrl,
-            jwtSecret
+            mongoUrl: MONGO_URL,
+            jwtSecret: JWT_SECRET
         })
-        app = express()
+        
         // One can use https://www.npmjs.com/package/morgan for debugging.
-        app.post('/auth/register', vjmServer.registerHandler)
-        app.post('/auth/login', vjmServer.loginHandler)
-        app.post('/auth/refresh', vjmServer.refreshHandler)
-        app.get('/protected', vjmServer.jwtProtector, (request, response) => {
-            response.sendStatus(200)
-        })
+        application = express()
+
+        application.post('/auth/register', vjmServer.registerHandler)
+        application.post('/auth/login', vjmServer.loginHandler)
+        application.post('/auth/refresh', vjmServer.refreshHandler)
+        application.get('/protected', vjmServer.jwtProtector,
+            (request, response) => { response.sendStatus(200) })
     })
 
     after((done) => {
-        // This is also a test in a sense that the default
-        // mongoose connection object is available.
-        mongoose.connect(
-            mongoUrl,
-            { useMongoClient: true },
-            () => {
-                mongoose.connection.db.dropDatabase(() => {
-                    done()
-                })
-            }
-        )
-    })
-
-    describe('Registration', () => {
-        let testStatus = (credentials, expectedStatus, done) => {
-            chai.request(app)
-                .post('/auth/register')
-                .send(credentials)
-                .end((error, response) => {  
-                    assert.equal(response.status, expectedStatus)
-                    done()
-                })
-        }
-
-        it('rejects empty input', (done) => {
-            testStatus({}, 400, done)
-        })
-
-        it('registers a user', (done) => {
-            testStatus(user.credentials, 200, done)
+        mongoose.createConnection(MONGO_URL, {
+            useMongoClient: true
+        }).then((connection) => {
+            connection.dropDatabase(() => {
+                done()
+            })
         })
     })
 
-    describe('Login', () => {
-        let testCallback = (credentials, callback, done) => {
-            chai.request(app)
-                .post('/auth/login')
-                .send(credentials)
-                .end((error, response) => {
-                    callback(error, response)
-                    done()
-                })
-        }
-
-        let testStatus = (credentials, expectedStatus, done) => {
-            testCallback(credentials, (error, response) => {
-                assert.equal(response.status, expectedStatus)
-            }, done)
-        }
-
-        it('with valid credentials', (done) => {
-            testCallback(user.credentials, (error, response) => {
-                let payload = jsonwebtoken.verify(response.text, jwtSecret)
-                assert.equal(payload.username, user.credentials.username)
-                user.signature = response.text
-            }, done)
+    describe('/auth/register', () => {
+        it('rejects a payload with no values', (done) => {
+            makeAuthRegisterRequest({}, assertResponseStatusCallDone(400, done))
         })
 
-        it('with invalid credentials', (done) => {
-            testStatus({
-                username: 'foo',
-                password: 'bar'
-            }, 401, done)
-        })
-
-        it('with malformed json', (done) => {
-            testStatus({}, 400, done)
+        it('accepts a pair of strings', (done) => {
+            makeAuthRegisterRequest(generateCredentials(),
+                assertResponseStatusCallDone(200, done))
         })
     })
 
-    describe('Refresh', () => {
+    describe('/auth/login', () => {
+        let credentials = null
+
         before((done) => {
-            chai.request(app)
-                .post('/auth/login')
-                .send(user.credentials)
-                .end((error, response) => {
-                    user.signature = response.text
-                    done()
-                })
+            credentials = generateCredentials()
+            makeAuthRegisterRequest(credentials, done)
         })
 
-        let testCallback = (token, callback, done) => {
-            chai.request(app)
-                .post('/auth/refresh')
-                .set('Authorization', 'Bearer ' + token)
-                .end((error, response) => {
-                    callback(error, response)
+        it('rejects a payload with no values', (done) => {
+            makeAuthLoginRequest({}, assertResponseStatusCallDone(400, done))
+        })
+
+        it('rejects invalid credentials', (done) => {
+            makeAuthLoginRequest({ username: 'foo', password: 'bar' },
+                assertResponseStatusCallDone(401, done))
+        })
+
+        it('accepts valid credentials and generates a token', (done) => {
+            makeAuthLoginRequest(credentials, (error, response) => {
+                let payload = jsonwebtoken.verify(response.text, JWT_SECRET)
+                assert.equal(payload.username, credentials.username)
+                done()
+            })
+        })
+    })
+
+    describe('/auth/refresh', () => {
+        let signature = null
+
+        before((done) => {
+            let credentials = generateCredentials()
+            makeAuthRegisterRequest(credentials, () => {
+                makeAuthLoginRequest(credentials, (error, response) => {
+                    signature = response.text
                     done()
                 })
-        }
+            })
+        })
 
-        it('saves updated token', (done) => {
-            let oldToken = jsonwebtoken.verify(user.signature, jwtSecret);
+        it('rejects a non-existing username', (done) => {
+            makeAuthRefreshRequest(
+                jsonwebtoken.sign({ username: 'foo' }, JWT_SECRET),
+                assertResponseStatusCallDone(400, done)
+            )
+        })
+
+        it('accepts a valid token and generates a new one', (done) => {
+            let originalToken = jsonwebtoken.verify(signature, JWT_SECRET);
             setTimeout(() => {
-                testCallback(user.signature, (error, response) => {
-                    let newToken = jsonwebtoken.verify(response.text, jwtSecret)
-                    assert.equal(oldToken.username, newToken.username)
-                    assert.isAbove(newToken.exp, oldToken.exp)
-                    user.signature = response.text
-                }, done)
+                makeAuthRefreshRequest(signature, (error, response) => {
+                    let newToken = jsonwebtoken.verify(
+                        response.text, JWT_SECRET)
+                    assert.equal(originalToken.username, newToken.username)
+                    assert.isAbove(newToken.exp, originalToken.exp)
+                    done()
+                })
             }, 1000)
         })
-
-        it('rejects inexistant username', (done) => {
-            testCallback(
-                jsonwebtoken.sign({
-                    username: 'foo'
-                }, jwtSecret), (error, response) => {
-                    assert.equal(response.status, 400)
-                }, done)
-        })
     })
 
-    describe('Protected', () => {
-        let testStatus = (token, expectedStatus, done) => {
-            chai.request(app)
-                .get('/protected')
-                .set('Authorization', 'Bearer ' + token)
-                .end((error, response) => {
-                    assert.equal(response.status, expectedStatus)
+    describe('/protected', () => {
+        let credentials = null
+        let signature = null
+
+        before((done) => {
+            credentials = generateCredentials()
+            makeAuthRegisterRequest(credentials, () => {
+                makeAuthLoginRequest(credentials, (error, response) => {
+                    signature = response.text
                     done()
                 })
-        }
-
-        it('with valid token', (done) => {
-            testStatus(user.signature, 200, done)
+            })
         })
 
-        it('with invalid token', (done) => {
-            testStatus(
-                jsonwebtoken.sign({
-                    username: 'login'
-                }, 'bar'), 401, done)
+        it('rejects a malformed signature', (done) => {
+            makeProtectedRequest(
+                jsonwebtoken.sign({ username: credentials.username }, 'bar'),
+                assertResponseStatusCallDone(401, done)
+            )
         })
 
-        it('rejects empty username', (done) => {
-            testStatus(jsonwebtoken.sign({}, jwtSecret), 400, done)
+        it('rejects a payload with no values', (done) => {
+            makeProtectedRequest(
+                jsonwebtoken.sign({}, JWT_SECRET),
+                assertResponseStatusCallDone(400, done)
+            )
         })
 
-        it('rejects inexistant username', (done) => {
-            testStatus(
-                jsonwebtoken.sign({
-                    username: 'foo'
-                }, jwtSecret), 400, done)
+        it('rejects a non-existing username', (done) => {
+            makeProtectedRequest(
+                jsonwebtoken.sign({ username: 'foo' }, JWT_SECRET),
+                assertResponseStatusCallDone(400, done)
+            )
+        })
+
+        it('accepts a valid signature', (done) => {
+            makeProtectedRequest(signature,
+                assertResponseStatusCallDone(200, done))
         })
     })
 })
