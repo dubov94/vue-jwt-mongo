@@ -8,9 +8,6 @@ const mongoose = require('mongoose')
 const passport = require('passport')
 const passportLocalMongoose = require('passport-local-mongoose')
 
-mongoose.set('useCreateIndex', true)
-mongoose.set('useNewUrlParser', true)
-
 function initializeExpressMiddlewares(options) {
     options = merge({
         userModelName: 'User',
@@ -31,6 +28,7 @@ function initializeExpressMiddlewares(options) {
     // possibility of using mongoose.connect() open.
     const database = mongoose.createConnection(
         options.mongoUrl,
+        { useCreateIndex: true, useNewUrlParser: true },
         (error) => {
             if (error) {
                 /* istanbul ignore next */

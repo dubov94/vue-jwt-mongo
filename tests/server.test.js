@@ -79,7 +79,10 @@ globalDescribe('Server', () => {
     })
 
     after((done) => {
-        mongoose.createConnection(MONGO_URL).then((connection) => {
+        mongoose.createConnection(
+            MONGO_URL,
+            { useCreateIndex: true, useNewUrlParser: true }
+        ).then((connection) => {
             connection.dropDatabase(() => {
                 done()
             })
