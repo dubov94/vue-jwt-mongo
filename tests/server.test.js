@@ -9,8 +9,14 @@ const mongoose = require('mongoose')
 
 chai.use(chaiHttp)
 const assert = chai.assert
+const globalDescribe = (title, body) => {
+    describe(title, function() {
+        this.timeout(4000)
+        body()
+    })
+}
 
-describe('Server', () => {
+globalDescribe('Server', () => {
     const DEFAULT_PASSWORD = 'password'
     const JWT_SECRET = 'shhh'
     const MONGO_URL = 'mongodb://localhost/vjmt'
@@ -73,9 +79,7 @@ describe('Server', () => {
     })
 
     after((done) => {
-        mongoose.createConnection(MONGO_URL, {
-            useMongoClient: true
-        }).then((connection) => {
+        mongoose.createConnection(MONGO_URL).then((connection) => {
             connection.dropDatabase(() => {
                 done()
             })
