@@ -37,26 +37,28 @@ const vjmServer = require('vue-jwt-mongo').Server({
   * Defaults to `7 * 24 * 60 * 60` (one week).
   * See [`jsonwebtoken.sign`](https://www.npmjs.com/package/jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback) for details.
 
-### Registration
+### Endpoints
 
-`registerHandler` expects `{ username, password }` in the request body. Returns an empty response.
+#### registerHandler
+
+Expects `{ username, password }` in the request body. Returns an empty response.
 
 The password is salted and hashed via [`passport-local-mongoose`](https://npmjs.com/package/passport-local-mongoose).
 ```javascript
 app.post('/auth/register', vjmServer.registerHandler)
 ```
 
-### Login
+#### loginHandler
 
-`loginHandler` expects `{ username, password }` in the request body. Returns a string &mdash; the token.
+Expects `{ username, password }` in the request body. Returns a string &mdash; the token.
 
 ```javascript
 app.post('/auth/login', vjmServer.loginHandler)
 ```
 
-### Refresh
+#### refreshHandler
 
-`refreshHandler` expects an empty request body and `Authorization: Bearer {token}` as one of the HTTP headers. Returns a string with a new token if the original token is valid.
+Expects an empty request body and `Authorization: Bearer {token}` as one of the HTTP headers. Returns a string with a new token if the original token is valid.
 
 ```javascript
 app.post('/auth/refresh', vjmServer.refreshHandler)
