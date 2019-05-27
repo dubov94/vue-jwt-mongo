@@ -4,7 +4,7 @@ const merge = require('merge')
 const jwtDecode = require('jwt-decode')
 
 function installVuePlugin(Vue, options) {
-    const sToMs = (seconds) => {
+    const sToMillis = (seconds) => {
         return seconds * 1000
     }
 
@@ -18,55 +18,67 @@ function installVuePlugin(Vue, options) {
 
     options = merge(defaultOptions, options)
 
-    const Token = new function() {
-        this.get = () => {
+    class Token {
+        static get() {
             return localStorage.getItem(options.storageKey)
         }
 
-        this.set = (value) => {
+        static set(value) {
             localStorage.setItem(options.storageKey, value)
         }
 
-        this.remove = () => {
+        static remove() {
             localStorage.removeItem(options.storageKey)
         }
 
-        this.valid = () => {
-            let token = this.get()
+        static isValid() {
+            let token = Token.get()
             if (token !== null) {
-                let tokenExpMs = sToMs(jwtDecode(token).exp)
+                let tokenExpMs = sToMillis(jwtDecode(token).exp)
                 let nowMs = new Date().getTime()
-                return tokenExpMs - nowMs > sToMs(60)
+                return tokenExpMs - nowMs > sToMillis(60)
             } else {
                 return false
             }
         }
     }
 
-    function Auth(instance) {
-        this.register = (username, password) => {
-            return instance.$http
+    class Auth {
+        constructor(vueInstance) {
+            this.vueInstance = vueInstance
+        }
+        
+        register(username, password) {
+            return this.vueInstance.$http
                 .post(options.registerEndpoint, { username, password })
-                .bind(instance)
+                .bind(this.vueInstance)
         }
 
-        this.logIn = (username, password) => {
-            return instance.$http
+        logIn(username, password) {
+            return this.vueInstance.$http
                 .post(options.loginEndpoint, { username, password })
-                .bind(instance)
+                .bind(this.vueInstance)
                 .then((response) => { Token.set(response.body) })
         }
 
-        this.refresh = () => {
-            return instance.$http
+        refresh() {
+            return this.vueInstance.$http
                 .post(options.refreshEndpoint, null, { bearer: true })
-                .bind(instance)
+                .bind(this.vueInstance)
                 .then((response) => { Token.set(response.body) })
         }
 
-        this.logOut = Token.remove
-        this.isLoggedIn = Token.valid
-        this.getToken = Token.get
+        logOut() {
+            Token.remove()
+        }
+
+        isLoggedIn() {
+            return Token.isValid()
+        }
+
+        getToken() {
+            return Token.get()
+        }
     }
 
     Object.defineProperty(Vue.prototype, '$auth', {
@@ -77,10 +89,11 @@ function installVuePlugin(Vue, options) {
 
     Vue.http.interceptors.push(function(request, next) {
         if (request.bearer) {
-            if (!Token.valid()) {
+            if (!Token.isValid()) {
                 return next(request.respondWith(null, {
                     status: 401,
-                    statusText: 'Request demands JWT but user was not logged in'
+                    statusText: 'Cannot make an authorized request'
+                        + ' as the user is not logged in'
                 }))
             } else {
                 request.headers.set('Authorization',
