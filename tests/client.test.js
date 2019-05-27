@@ -65,10 +65,7 @@ describe('Client', () => {
             server.restore()
         })
 
-        it([
-            'sends a request to /auth/register',
-            'sets the correct context in `then`'
-        ].join('\n'), (done) => {
+        it('$auth.register sends a request to /auth/register', (done) => {
             server.respondWith([200, {}, ''])
             vm.$auth.register('user', 'pass').then(function() {
                 assert.strictEqual(this, vm)
@@ -77,11 +74,7 @@ describe('Client', () => {
             })
         })
 
-        it([
-            'sends a request to /auth/login with valid credentials',
-            'receives a token and makes $auth.getToken return it',
-            'a call to $auth.logOut makes $auth.isLoggedIn false'
-        ].join('\n'), (done) => {
+        it('$auth.logIn, $auth.getToken & $auth.logOut', (done) => {
             server.respondWith(originalToken)
             vm.$auth.logIn('user', 'pass').then(function() {
                 assert.strictEqual(this, vm)
@@ -94,10 +87,7 @@ describe('Client', () => {
             })
         })
 
-        it([
-            'sends a request to /auth/login with invalid credentials',
-            'receives an erroneous status and calls `catch`'
-        ].join('\n'), (done) => {
+        it('$auth.logIn sends random credentials => calls `catch`', (done) => {
             server.respondWith([401, {}, ''])
             vm.$auth.logIn('fail', 'fail').catch(function(response) {
                 assert.strictEqual(this, vm)
@@ -108,7 +98,7 @@ describe('Client', () => {
             })
         })
 
-        it(['$auth.refresh'].join('\n'), (done) => {
+        it('$auth.refresh', (done) => {
             let newToken = generateToken()
             server.respondWith(newToken)
             localStorage['jsonwebtoken'] = originalToken
