@@ -17,15 +17,15 @@ function initializeExpressMiddlewares(options) {
     // See http://mongoosejs.com/docs/promises.html.
     mongoose.Promise = global.Promise
 
-    // Create empty schema that is going to be used
-    // by passport-local-mongoose.
+    // Create an empty schema to be used by passport-local-mongoose.
     const UserSchema = new mongoose.Schema()
-    // Now a corresponding model will have methods
-    // such as createStrategy() and serializeUser().
+
+    // Now the corresponding model will have additional methods such as
+    // `createStrategy` and `serializeUser`.
     UserSchema.plugin(passportLocalMongoose)
 
-    // Create a separate connection leaving the
-    // possibility of using mongoose.connect() open.
+    // Create a separate connection. This way clients may still use the default
+    // `mongoose.connect`.
     const database = mongoose.createConnection(
         options.mongoUrl,
         { useCreateIndex: true, useNewUrlParser: true },
@@ -36,32 +36,29 @@ function initializeExpressMiddlewares(options) {
             }
         }
     )
+
     const User = database.model(options.userModelName, UserSchema)
 
-    // We are following https://github.com/saintedlama/passport-local-mongoose
-    // > Simplified Passport Configuration.
+    // https://github.com/saintedlama/passport-local-mongoose#simplified-passportpassport-local-configuration.
     passport.use(User.createStrategy())
     passport.serializeUser(User.serializeUser())
     passport.deserializeUser(User.deserializeUser())
 
     const jsonParser = bodyParser.json()
-    // Endpoints with this middleware provided check the token for validity
-    // and set request.user dictionary to payload.
+
+    // `jwtValidator` ensures that the token from 'Authorization' header is
+    // valid and populates `request.user`.
     const jwtValidator = expressJwt({
         secret: options.jwtSecret
     })
 
-    function generateToken(username) {
+    const generateToken = (username) => {
         return jsonwebtoken.sign({ username }, options.jwtSecret, {
             expiresIn: options.jwtExpiresIn
         })
     }
 
-    function loginRespondent(request, response) {
-        response.send(generateToken(request.body.username))
-    }
-
-    function registerRespondent(request, response) {
+    const registerRespondent = (request, response) => {
         User.register(new User({
             username: request.body.username
         }), request.body.password, (error) => {
@@ -73,11 +70,15 @@ function initializeExpressMiddlewares(options) {
         })
     }
 
-    function refreshRespondent(request, response) {
+    const loginRespondent = (request, response) => {
+        response.send(generateToken(request.body.username))
+    }
+
+    const refreshRespondent = (request, response) => {
         response.send(generateToken(request.user.username))
     }
 
-    function userValidator(request, response, next) {
+    const userValidator = (request, response, next) => {
         User.findOne({
             username: request.user.username
         }, (error, user) => {
@@ -104,12 +105,14 @@ function initializeExpressMiddlewares(options) {
 
     return {
         registerHandler: [jsonParser, registerRespondent],
-        // Passport is looking for fields 'username' and 'password'
-        // in the json provided and this is exactly what we are
-        // sending from client. See http://passportjs.org/docs > Parameters.
+        // Note that passport-local is looking for fields named 'username' and
+        // 'password' in the payload, see
+        // http://www.passportjs.org/docs/username-password/#parameters.
         loginHandler: [
-            jsonParser, passport.initialize(),
-            passport.authenticate('local'), loginRespondent
+            jsonParser,
+            passport.initialize(),
+            passport.authenticate('local'),
+            loginRespondent
         ],
         refreshHandler: [jwtProtector, refreshRespondent],
         jwtProtector
