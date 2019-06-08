@@ -5,7 +5,7 @@
 [![Build](https://travis-ci.org/dubov94/vue-jwt-mongo.svg?branch=master)](https://travis-ci.org/dubov94/vue-jwt-mongo)
 [![Coverage](https://codecov.io/gh/dubov94/vue-jwt-mongo/branch/master/graph/badge.svg)](https://codecov.io/gh/dubov94/vue-jwt-mongo)
 
-A [package](https://www.npmjs.com/package/vue-jwt-mongo) for bootstrapping a simple [JSON Web Token](https://jwt.io/) based authentication system using [Vue.js](https://vuejs.org/), [MongoDB](https://www.mongodb.com/) and [Express.js](https://expressjs.com/).
+A [package](https://www.npmjs.com/package/vue-jwt-mongo) for bootstrapping a simple [JSON Web Token](https://jwt.io/)-based authentication system using [Vue.js](https://vuejs.org/), [MongoDB](https://www.mongodb.com/) and [Express.js](https://expressjs.com/).
 
 ## Installation
 
@@ -31,7 +31,7 @@ const vjmServer = require('vue-jwt-mongo').Server({
 * `jwtSecret` (__mandatory__): a secret key for token generation.
   * One can get such a key [here](https://www.grc.com/passwords.htm).
   * See [`jsonwebtoken.sign`](https://www.npmjs.com/package/jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback) for details.
-* `userModelName`: a name for a [mongoose](http://mongoosejs.com) model storing encoded user credentials.
+* `userModelName`: a name for the [mongoose](http://mongoosejs.com) model storing encoded user credentials.
   * Defaults to `'User'`.
 * `jwtExpiresIn`: token expiration time in seconds.
   * Defaults to `7 * 24 * 60 * 60` (one week).
@@ -43,7 +43,7 @@ const vjmServer = require('vue-jwt-mongo').Server({
 
 Expects `{ username, password }` in the request body. Returns an empty response.
 
-The password is salted and hashed via [`passport-local-mongoose`](https://npmjs.com/package/passport-local-mongoose).
+The password is salted and hashed via [passport-local-mongoose](https://npmjs.com/package/passport-local-mongoose).
 ```javascript
 app.post('/auth/register', vjmServer.registerHandler)
 ```
@@ -85,13 +85,13 @@ Vue.use(require('vue-jwt-mongo').Client, {
 
 ### Options
 
-* `registerEndpoint`: server endpoint for registration.
+* `registerEndpoint`: the server's endpoint for registration requests.
   * Defaults to `'/auth/register'`.
-* `loginEndpoint`: server endpoint for authentication.
+* `loginEndpoint`: the server's endpoint for authentication requests.
   * Defaults to `'/auth/login'`.
-* `refreshEndpoint`: server endpoint for token refresh.
+* `refreshEndpoint`: the server's endpoint for refreshing the token.
   * Defaults to `'/auth/refresh'`.
-* `storageKey`: localStorage key used for saving a token.
+* `storageKey`: a [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) key used for saving the token.
   * Defaults to `'jsonwebtoken'`.
 * `bearerLexem`: a lexem prepending tokens in [`Authorization`](https://developer.mozilla.org/en/docs/Web/HTTP/Headers/Authorization) headers.
   * Defaults to `'Bearer '` (extra space intended).
