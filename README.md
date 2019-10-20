@@ -70,7 +70,7 @@ app.post('/auth/refresh', vjmServer.refreshHandler)
 
 ```javascript
 app.get('/protected', vjmServer.jwtProtector, (request, response) => {
-    console.log(request.user.username);
+    console.log(request.user.username)
 })
  ```
 
