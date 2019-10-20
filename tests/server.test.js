@@ -11,7 +11,7 @@ chai.use(chaiHttp)
 const assert = chai.assert
 const globalDescribe = (title, body) => {
     describe(title, function() {
-        this.timeout(4000)
+        this.timeout(8000)
         body()
     })
 }
