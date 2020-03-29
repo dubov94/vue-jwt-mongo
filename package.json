@@ -1,6 +1,6 @@
 {
   "name": "vue-jwt-mongo",
-  "version": "1.4.7",
+  "version": "1.5.0",
   "description": "A simple authentication system for Vue.js",
   "files": [
     "distribution/"
@@ -9,7 +9,7 @@
   "browser": "distribution/client.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --exit tests/*",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly tests/* -- --exit --reporter spec",
+    "coverage": "./node_modules/.bin/nyc npm run test",
     "build": "./node_modules/.bin/babel source --out-dir distribution"
   },
   "repository": {
@@ -32,30 +32,31 @@
     "url": "https://github.com/dubov94/vue-jwt-mongo/issues"
   },
   "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
-  "devDependencies": {
-    "babel-cli": "6.26.0",
-    "babel-preset-env": "1.7.0",
-    "chai": "4.2.0",
-    "chai-http": "4.3.0",
-    "codecov": "3.6.5",
-    "dom-storage": "2.1.0",
-    "express": "4.17.1",
-    "istanbul": "0.4.5",
-    "jsdom": "15.1.0",
-    "mocha": "6.1.4",
-    "sinon": "7.3.2",
-    "vue": "2.5.16",
-    "vue-resource": "1.5.1"
-  },
   "dependencies": {
     "body-parser": "1.19.0",
     "express-jwt": "5.3.1",
     "jsonwebtoken": "8.5.1",
     "jwt-decode": "2.2.0",
     "merge": "1.2.1",
-    "mongoose": "5.7.5",
-    "passport": "0.4.0",
+    "mongoose": "5.9.6",
+    "passport": "0.4.1",
     "passport-local": "1.0.0",
-    "passport-local-mongoose": "5.0.1"
+    "passport-local-mongoose": "6.0.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.8.4",
+    "@babel/core": "7.9.0",
+    "@babel/preset-env": "7.9.0",
+    "chai": "4.2.0",
+    "chai-http": "4.3.0",
+    "codecov": "3.6.5",
+    "dom-storage": "2.1.0",
+    "express": "4.17.1",
+    "jsdom": "15.1.0",
+    "mocha": "7.1.1",
+    "nyc": "15.0.0",
+    "sinon": "9.0.1",
+    "vue": "2.5.16",
+    "vue-resource": "1.5.1"
   }
 }
