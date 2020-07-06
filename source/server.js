@@ -53,7 +53,8 @@ function initializeExpressMiddlewares(options) {
     // `jwtValidator` ensures that the token from 'Authorization' header is
     // valid and populates `request.user`.
     const jwtValidator = expressJwt({
-        secret: options.jwtSecret
+        secret: options.jwtSecret,
+        algorithms: ['HS256']
     })
 
     const generateToken = (username) => {
