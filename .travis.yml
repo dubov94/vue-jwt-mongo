@@ -7,4 +7,4 @@ services:
   - mongodb
 script:
   - npm run coverage
-  - ./node_modules/.bin/codecov
+  - ./node_modules/.bin/codecov --disable=gcov --file=./coverage/lcov.info
