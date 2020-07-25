@@ -9,7 +9,7 @@
   "browser": "distribution/client.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --exit tests/*",
-    "coverage": "./node_modules/.bin/nyc npm run test",
+    "coverage": "./node_modules/.bin/nyc --reporter=lcovonly npm run test",
     "build": "./node_modules/.bin/babel source --out-dir distribution"
   },
   "repository": {
