@@ -1,6 +1,6 @@
 {
   "name": "vue-jwt-mongo",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "A simple authentication system for Vue.js",
   "files": [
     "distribution/"
