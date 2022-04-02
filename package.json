@@ -1,6 +1,6 @@
 {
   "name": "vue-jwt-mongo",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "A simple authentication system for Vue.js",
   "files": [
     "distribution/"
@@ -38,13 +38,13 @@
     "jsonwebtoken": "8.5.1",
     "jwt-decode": "2.2.0",
     "merge": "2.1.1",
-    "mongoose": "5.12.8",
+    "mongoose": "6.2.9",
     "passport": "0.4.1",
     "passport-local": "1.0.0",
     "passport-local-mongoose": "6.0.1"
   },
   "devDependencies": {
-    "@babel/cli": "7.13.16",
+    "@babel/cli": "7.17.6",
     "@babel/core": "7.9.0",
     "@babel/preset-env": "7.9.0",
     "chai": "4.2.0",
@@ -52,8 +52,8 @@
     "codecov": "3.7.1",
     "dom-storage": "2.1.0",
     "express": "4.17.1",
-    "jsdom": "15.1.0",
-    "mocha": "7.1.1",
+    "jsdom": "19.0.0",
+    "mocha": "9.2.2",
     "nyc": "15.0.0",
     "sinon": "9.0.1",
     "vue": "2.5.16",

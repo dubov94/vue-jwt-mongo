@@ -79,17 +79,9 @@ globalDescribe('Server', () => {
     })
 
     after((done) => {
-        mongoose.createConnection(
-            MONGO_URL,
-            {
-                useCreateIndex: true,
-                useNewUrlParser: true,
-                useUnifiedTopology: true
-            }
-        ).then((connection) => {
-            connection.dropDatabase(() => {
-                done()
-            })
+        const connection = mongoose.createConnection(MONGO_URL)
+        connection.dropDatabase(() => {
+            done()
         })
     })
 

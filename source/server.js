@@ -28,11 +28,7 @@ function initializeExpressMiddlewares(options) {
     // `mongoose.connect`.
     const database = mongoose.createConnection(
         options.mongoUrl,
-        {
-            useCreateIndex: true,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        },
+        {},
         (error) => {
             if (error) {
                 /* istanbul ignore next */
