@@ -5,7 +5,7 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 const express = require('express')
 const jsonwebtoken = require('jsonwebtoken')
-const mongoose = require('mongoose')
+const { MongoMemoryServer } = require('mongodb-memory-server')
 
 chai.use(chaiHttp)
 const assert = chai.assert
@@ -16,10 +16,19 @@ const globalDescribe = (title, body) => {
     })
 }
 
-globalDescribe('Server', () => {
+globalDescribe('Server', async () => {
     const DEFAULT_PASSWORD = 'password'
     const JWT_SECRET = 'shhh'
-    const MONGO_URL = 'mongodb://localhost/vjmt'
+
+    let mongoServer = null
+
+    before(async () => {
+        mongoServer = await MongoMemoryServer.create();
+    });
+
+    after(async () => {
+        await mongoServer.stop();
+    });
 
     let application = null
     let userCounter = 0
@@ -64,7 +73,7 @@ globalDescribe('Server', () => {
 
     before(() => {
         let vjmServer = VueJwtMongo.Server({
-            mongoUrl: MONGO_URL,
+            mongoUrl: mongoServer.getUri(),
             jwtSecret: JWT_SECRET
         })
         
@@ -76,13 +85,6 @@ globalDescribe('Server', () => {
         application.post('/auth/refresh', vjmServer.refreshHandler)
         application.get('/protected', vjmServer.jwtProtector,
             (request, response) => { response.sendStatus(200) })
-    })
-
-    after((done) => {
-        const connection = mongoose.createConnection(MONGO_URL)
-        connection.dropDatabase(() => {
-            done()
-        })
     })
 
     describe('/auth/register', () => {

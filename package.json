@@ -54,6 +54,7 @@
     "express": "4.17.1",
     "jsdom": "19.0.0",
     "mocha": "9.2.2",
+    "mongodb-memory-server": "^8.9.4",
     "nyc": "15.0.0",
     "sinon": "9.0.1",
     "vue": "2.5.16",
