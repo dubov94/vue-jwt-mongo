@@ -1,7 +1,7 @@
 'use strict'
 
 const bodyParser = require('body-parser')
-const expressJwt = require('express-jwt')
+const { expressjwt: expressJwt } = require('express-jwt')
 const jsonwebtoken = require('jsonwebtoken')
 const merge = require('merge')
 const mongoose = require('mongoose')
@@ -47,7 +47,7 @@ function initializeExpressMiddlewares(options) {
     const jsonParser = bodyParser.json()
 
     // `jwtValidator` ensures that the token from 'Authorization' header is
-    // valid and populates `request.user`.
+    // valid and populates `request.auth`.
     const jwtValidator = expressJwt({
         secret: options.jwtSecret,
         algorithms: ['HS256']
@@ -86,9 +86,16 @@ function initializeExpressMiddlewares(options) {
             if (error || user === null) {
                 response.sendStatus(400)
             } else {
-                return next()
+                next()
             }
         })
+    }
+
+    // To preserve backward compatibility, see
+    // https://github.com/auth0/express-jwt#migration-from-v6.
+    const copyAuthToUser = (request, response, next) => {
+        request.user = request.auth
+        next()
     }
 
     const jwtProtector = [
@@ -101,6 +108,7 @@ function initializeExpressMiddlewares(options) {
                 }
             })
         },
+        copyAuthToUser,
         userValidator
     ]
 
